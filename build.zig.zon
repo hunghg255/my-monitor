@@ -1,0 +1,12 @@
+.{
+    .name = .mymonitor,
+    .version = "0.1.0",
+    .fingerprint = 0x8443be1d0d1c7c32,
+    .minimum_zig_version = "0.17.0",
+    .dependencies = .{
+        .myzig = .{
+            .path = "../myzig",
+        },
+    },
+    .paths = .{ "build.zig", "build.zig.zon", "src", "assets" },
+}

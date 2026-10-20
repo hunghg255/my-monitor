@@ -1,0 +1,32 @@
+# Third-party notices
+
+mymonitor's own source code is licensed under the MIT License in
+[`LICENSE`](LICENSE). The material below keeps its own copyright and license.
+
+## myzig
+
+mymonitor is built on [myzig](https://github.com/hunghg255/myzig), Copyright (c)
+2026 Rach Pradhan, under the MIT License. myzig carries its own notices for
+mygo (MIT) and GPUI (Apache 2.0) in its
+[`THIRD_PARTY_NOTICES.md`](https://github.com/hunghg255/myzig/blob/main/THIRD_PARTY_NOTICES.md).
+
+## CodeGraff and Harness (external license)
+
+mymonitor uses these from [CodeGraff](https://github.com/justrach/codegraff) and
+[Harness](https://github.com/justrach/harness):
+
+- **The Codegraff palette** of the macOS app icon (`macos/AppIcon.icns`,
+  `macos/make-icon.py`), after
+  [Harness](https://github.com/justrach/harness).
+
+These parts are derived from CodeGraff and come under the license CodeGraff
+ships with: CodeGraff's **modified GNU AGPLv3**, Copyright (C) 2026 Rach
+Pradhan and Yu Xi Lim. That license, not MIT, stays their license. It is kept
+here as the original, verbatim, in
+[`third_party/licenses/CodeGraff-LICENSE.txt`](third_party/licenses/CodeGraff-LICENSE.txt)
+(from CodeGraff
+[`389b261`](https://github.com/justrach/codegraff/blob/389b26182fef0b8070d9a976505286d693876b6c/LICENSE)).
+Harness is distributed under the same modified AGPLv3 terms.
+
+mymonitor's MIT license covers mymonitor's own code. It does not extend to CodeGraff
+or Harness.
