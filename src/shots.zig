@@ -58,6 +58,11 @@ pub fn main(init: std.process.Init) !void {
         if (p == .cleanup and !a.cleanup.done()) {
             a.cleanup.start();
             while (a.cleanup.running()) myzig.runFor(0.2);
+            // A few kinds open, and one ticked.
+            for (a.cleanup.drives[0..a.cleanup.n_drives]) |drive| {
+                for ([_]@import("cleanup_win.zig").Kind{ .package_caches, .installers, .agent_sessions }) |kind| a.clean_open[drive.volume.letter - 'A'][@backingInt(kind)] = true;
+            }
+            for (a.cleanup.ticks(.temporary)) |*on| on.* = true;
             t.settle(1);
         }
         // Icons come a few a frame.

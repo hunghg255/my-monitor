@@ -67,10 +67,19 @@ pub fn sidebar(c: *ui.Context, a: *App, k: theme.Colors) void {
     item(c, a, k, .energy, "Energy", if (bat.present) c.print("{d:.0}%", .{bat.percent}) else "");
     section(c, a, k, "System");
     item(c, a, k, .apps, "Apps", "");
-    item(c, a, k, .cleanup, "Cleanup", "");
+    item(c, a, k, .cleanup, "Cleanup", cleanable(c, a));
     item(c, a, k, .about, @import("view_about.zig").title, "");
     ui.spacer(c);
     foot(c, a, k);
+}
+
+/// What Cleanup found can go, once it has looked.
+fn cleanable(c: *ui.Context, a: *App) []const u8 {
+    if (comptime @import("builtin").os.tag != .windows) return "";
+    if (!a.cleanup.done()) return "";
+    var all: u64 = 0;
+    for (@import("cleanup_win.zig").kinds) |kind| all += a.cleanup.found(kind).bytes;
+    return kit.bytes(c, all);
 }
 
 fn section(c: *ui.Context, a: *App, k: theme.Colors, name: []const u8) void {

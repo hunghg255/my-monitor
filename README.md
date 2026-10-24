@@ -138,11 +138,19 @@ zig build run --fork=../..
   own uninstaller, or Settings for a Store app), its folder, the processes
   it runs, its package and path. A right-click offers Open, Uninstall,
   Show in File Explorer, Show in Processes, Copy Name and Copy Path.
-- **Cleanup:** what can go (apps' caches, package managers' downloads,
-  build caches, old Claude Code and Codex sessions, installers left in
-  Downloads, logs, stale temporary files), scanned on a thread of its own;
-  the drive as dots colored by what holds it; tick kinds and they move to
-  the Recycle Bin, after asking.
+- **Cleanup:** scan all available local/USB drives, or choose a drive such
+  as C: or D:. Each drive shows used/free space, cleanup candidates, and
+  its largest folders and files, with three levels to browse. Scanning
+  runs in the background and can be stopped, keeping partial results.
+  Recognized app/package caches, project dependencies (`node_modules`
+  beside `package.json`), Zig build caches (`.zig-cache` beside `build.zig`),
+  old agent sessions, downloaded installers, logs and stale temporary files
+  can be selected by drive, category or item. Nothing is preselected;
+  installers and sessions require review, and system/personal folders are
+  inspection only. Confirm the selection before recycling; Windows asks
+  separately if it cannot recycle an item. Emptying the Recycle Bin is
+  what frees disk space. File sizes are logical estimates; unreadable paths,
+  junctions and cloud placeholders are skipped and reported.
 - **About This PC:** the model, chip, memory, system, build, displays and
   storage.
 - **Settings** (the gear): open at login, how often to sample (0.5 to 5

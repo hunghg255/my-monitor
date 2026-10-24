@@ -121,6 +121,68 @@ test "the pages: overview, CPU, memory, GPU, disk, network, energy, apps, this P
     try std.testing.expect(a.paused);
 }
 
+test "cleanup shows drives separately and checks only the visible drive" {
+    if (builtin.os.tag != .windows) return;
+    const cw = @import("cleanup_win.zig");
+    const gpa = std.testing.allocator;
+    var a: App = .init(gpa, std.testing.io);
+    defer a.deinit();
+    try fake(&a);
+    a.page = .cleanup;
+    const s = &a.cleanup;
+    s.n_drives = 2;
+    for ([_]u8{ 'C', 'D' }, 0..) |letter, i| {
+        a.sampler.volumes[i] = .{ .letter = letter, .total = 500 << 30, .free = 100 << 30 };
+        const label = if (letter == 'C') "System" else "Data";
+        @memcpy(a.sampler.volumes[i].label[0..label.len], label);
+        a.sampler.volumes[i].label_len = label.len;
+        s.drives[i] = .{ .volume = a.sampler.volumes[i], .complete = true };
+    }
+    a.sampler.n_volumes = 2;
+    s.drives[0].entries = &.{.{ .path = "C:\\Windows", .found = .{ .bytes = 50 << 30 }, .protected = true }};
+    s.drives[1].entries = &.{.{ .path = "D:\\projects", .found = .{ .bytes = 80 << 30 }, .children = &.{.{ .path = "D:\\projects\\app", .found = .{ .bytes = 60 << 30 } }} }};
+    const items = &s.items[@backingInt(cw.Kind.caches)];
+    const paths = [_][]const u16{ std.unicode.utf8ToUtf16LeStringLiteral("C:\\cache"), std.unicode.utf8ToUtf16LeStringLiteral("D:\\cache") };
+    for (paths, 0..) |path, i| {
+        const f: cw.Found = .{ .bytes = (i + 1) << 20, .files = 1 };
+        try items.starts.append(gpa, @intCast(items.paths.items.len));
+        try items.paths.appendSlice(gpa, path);
+        try items.paths.append(gpa, 0);
+        try items.found.append(gpa, f);
+        try items.ticked.append(gpa, false);
+        try items.groups.append(gpa, .{ .label = "Test cache", .drive = @intCast(path[0]), .first = @intCast(i), .count = 1, .found = f });
+        s.results[@backingInt(cw.Kind.caches)].bytes += f.bytes;
+    }
+    s.scanned.store(true, .release);
+    var t: ui.Tester = undefined;
+    try t.init(gpa, .init(&a, view.view), .{ .width = 1280, .height = 1000, .theme = theme.ui(false) });
+    defer t.deinit();
+    t.settle(1);
+    try std.testing.expect(t.hasText("All drives") and t.hasText("C:  System") and t.hasText("D:  Data"));
+    try std.testing.expect(t.hasText("Keep / system"));
+    try t.screenshot("/tmp/mymonitor-cleanup-drives.png");
+    try open(&t, "D:");
+    try std.testing.expect(a.clean_drive == 'D');
+    try std.testing.expect(!t.hasText("C:  System") and t.hasText("D:  Data"));
+    var cache = t.findText("Caches").?;
+    // The legend has the same label; the last match is the category row.
+    for (t.ctx.nodes.items) |n| switch (n.content) {
+        .text => |tx| if (std.mem.eql(u8, tx.str, "Caches")) {
+            cache = n.rect;
+        },
+        else => {},
+    };
+    t.click(cache.x - 48, cache.y + 7);
+    t.settle(1);
+    try std.testing.expect(!s.ticks(.caches)[0] and s.ticks(.caches)[1]);
+    try std.testing.expectEqual(@as(u64, 2 << 20), s.ticked(.caches).bytes);
+    try open(&t, "Clean selected 2.00 MB…");
+    try std.testing.expect(a.confirm_clean and t.hasText("D: · Caches"));
+    try open(&t, "Cancel");
+    try std.testing.expect(!a.confirm_clean);
+    try t.screenshot("/tmp/mymonitor-cleanup-drive-d.png");
+}
+
 test "the processes page: sorting, the filter, the details and quitting a process" {
     const gpa = std.testing.allocator;
     var a: App = .init(gpa, std.testing.io);

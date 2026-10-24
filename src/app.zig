@@ -228,10 +228,14 @@ pub const App = struct {
     /// Asks for the window to show (the tray's panel), and for the app to
     /// end (its menu).
     on_open: ?Notify = null,
-    /// What Cleanup found, which kinds are ticked, and the sheet asking
-    /// before they go to the Recycle Bin.
+    /// What Cleanup found (and which of it is ticked), and the sheet asking
+    /// before it goes to the Recycle Bin.
     cleanup: if (builtin.os.tag == .windows) @import("cleanup_win.zig").Scanner else void = undefined,
-    clean_ticked: [7]bool = @splat(true),
+    /// Cleanup's kinds and groups shown open.
+    clean_open: [26][7]bool = @splat(@splat(false)),
+    clean_groups: std.AutoHashMapUnmanaged(u64, void) = .empty,
+    /// Null shows/scans all local drives; otherwise the selected letter.
+    clean_drive: ?u8 = null,
     confirm_clean: bool = false,
     cleaned: u64 = 0,
 
@@ -262,7 +266,9 @@ pub const App = struct {
         a.lines.deinit(a.sampler.gpa);
         a.open_groups.deinit(a.sampler.gpa);
         a.hidden.deinit(a.sampler.gpa);
+        a.clean_groups.deinit(a.sampler.gpa);
         if (comptime builtin.os.tag == .windows) {
+            @import("view_cleanup.zig").waitForCleaning();
             a.cleanup.deinit();
             a.installed.deinit();
         }
